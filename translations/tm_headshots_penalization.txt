@@ -1,0 +1,13 @@
+"Phrases" {
+	"PREFIX" {
+		"en"	""
+	}
+	
+	"BAN_REASON" {
+		"en"	"Shooting teammates in the head repeatedly!"
+	}
+	
+	"WARNING" {
+		"en"	"{red}You will be banned if you continue shooting your teammates in the head!"
+	}
+}
