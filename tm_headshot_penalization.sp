@@ -6,6 +6,7 @@
 #include <sourcebanspp>
 
 int g_iClientHeadShots[MAXPLAYERS+1] = {0, ...};
+bool g_bClientBanned[MAXPLAYERS+1] = {false, ...};
 
 ConVar g_ConVar_HeadShotsToBan, g_ConVar_BanLength, g_ConVar_RestartOnRound, g_ConVar_WarningEnable;
 
@@ -31,8 +32,9 @@ public void OnPluginStart() {
 	AutoExecConfig();
 }
 
-public void OnClientConnected(int client) {
+public void OnClientDisconnect(int client) {
 	g_iClientHeadShots[client] = 0;
+	g_bClientBanned[client] = false;
 }
 
 public void EventRoundStart(Handle event, const char[] name, bool dontBroadcast) {
@@ -49,6 +51,9 @@ public Action EventPlayerHurt(Handle event, const char[] name, bool dontBroadcas
 	if (attacker <= 0 || attacker > MaxClients) //Verify attacker index
 		return Plugin_Continue;
 		
+	if (g_bClientBanned[attacker]) //Check if the client isnt already banned
+		return Plugin_Handled;
+		
 	int index = GetClientOfUserId(GetEventInt(event, "userid")); //Get victim index
 	if (GetClientTeam(index) != GetClientTeam(attacker)) //Verify that the attacker and the victim have the same team
 		return Plugin_Continue;
@@ -59,6 +64,8 @@ public Action EventPlayerHurt(Handle event, const char[] name, bool dontBroadcas
 		if (g_iClientHeadShots[attacker] >= g_ConVar_HeadShotsToBan.IntValue) {
 			char sBuffer[256];
 			FormatEx(sBuffer, 256, "%T", "BAN_REASON", attacker); //Get the translated reason for the ban
+			
+			g_bClientBanned[attacker] = true; //Mark the attacker as banned
 			
 			SBPP_BanPlayer(0, attacker, g_ConVar_BanLength.IntValue, sBuffer); //Ban the attacker
 		}
